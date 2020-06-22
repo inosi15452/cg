@@ -2,14 +2,14 @@
 <head>
 <title id="title">legacygl.js Demo: Mesh Viewer</title>
 <script src="https://cdn.rawgit.com/toji/gl-matrix/v3.3.0/dist/gl-matrix.js"></script>
-<script src="../gl-matrix-util.js"></script>
-<script src="../legacygl.js"></script>
-<script src="../drawutil.js"></script>
-<script src="../camera.js"></script>
-<script src="../util.js"></script>
-<script src="../halfedge.js"></script>
-<script src="../meshio.js"></script>
-<script src="../boundingbox.js"></script>
+<script src="https://legacygl-js.glitch.me/gl-matrix-util.js"></script>
+<script src="https://legacygl-js.glitch.me/legacygl.js"></script>
+<script src="https://legacygl-js.glitch.me/drawutil.js"></script>
+<script src="https://legacygl-js.glitch.me/camera.js"></script>
+<script src="https://legacygl-js.glitch.me/util.js"></script>
+<script src="https://legacygl-js.glitch.me/halfedge.js"></script>
+<script src="https://legacygl-js.glitch.me/meshio.js"></script>
+<script src="https://legacygl-js.glitch.me/boundingbox.js"></script>
 <script type="text/javascript">
 var gl;
 var canvas;
@@ -46,13 +46,14 @@ function draw() {
     
     // mesh faces
     legacygl.uniforms.use_material.push();
-    legacygl.uniforms.use_material.value = document.getElementById("check_flat").checked ? 0 : 1;
+    legacygl.uniforms.use_material.value = document.getElementById("check_noshade").checked ? 0 : 1;
     displist_faces.draw(function() {
         legacygl.color(0, 0.7, 1);
         if (document.getElementsByName("radio_normal")[2].checked)
             legacygl.enable(legacygl.AUTO_NORMAL);
         legacygl.begin(gl.TRIANGLES);
         mesh.faces.forEach(function(f) {
+            if (f.vertices().length != 3) return;
             legacygl.normal3(f.normal);
             f.vertices().forEach(function(v){
                 if (document.getElementsByName("radio_normal")[0].checked)
@@ -61,6 +62,28 @@ function draw() {
             });
         });
         legacygl.end();
+        legacygl.begin(legacygl.QUADS);
+        mesh.faces.forEach(function(f) {
+            if (f.vertices().length != 4) return;
+            legacygl.normal3(f.normal);
+            f.vertices().forEach(function(v){
+                if (document.getElementsByName("radio_normal")[0].checked)
+                    legacygl.normal3(v.normal);
+                legacygl.vertex3(v.point);
+            });
+        });
+        legacygl.end();
+        mesh.faces.forEach(function(f) {
+            if (f.vertices().length == 3 || f.vertices().length == 4) return;
+            legacygl.begin(gl.TRIANGLE_FAN);
+            legacygl.normal3(f.normal);
+            f.vertices().forEach(function(v){
+                if (document.getElementsByName("radio_normal")[0].checked)
+                    legacygl.normal3(v.normal);
+                legacygl.vertex3(v.point);
+            });
+            legacygl.end();
+        });
         legacygl.disable(legacygl.AUTO_NORMAL);
     });
     legacygl.uniforms.use_material.pop();
@@ -269,7 +292,7 @@ function init() {
     <li>Mesh</li>
     <ul>
         <li>from Disk: <input type="file" id="text_mesh_disk" accept=".off,.obj"></li>
-        <li>from URL: <input type="url" id="text_mesh_url" value="https://bitbucket.org/kenshi84/legacygl.js/raw/0dd3577e1c488451f952c3407a417ceb33e9dbea/demo/data/bunny.obj"></li>
+        <li>from URL: <input type="url" id="text_mesh_url" value="https://cdn.glitch.com/13696316-44e5-40d1-b312-830e260e4817%2Fbunny.obj?v=1555562464228"></li>
         <li>Statistics:</li>
         <ul>
             <li><span id="label_mesh_nv">0</span> Vertices</li>
@@ -280,12 +303,12 @@ function init() {
     <li>Material</li>
     <ul>
         <li>from Disk: <input type="file" id="text_material_disk" accept=".png,.jpg,.gif"></li>
-        <li>from URL: <input type="url" id="text_material_url" value="https://bytebucket.org/kenshi84/legacygl.js/raw/cce473047b802537091eece6258d6be01d7c3750/demo/data/metal1.png"></li>
+        <li>from URL: <input type="url" id="text_material_url" value="https://cdn.glitch.com/13696316-44e5-40d1-b312-830e260e4817%2Fmetal1.png?v=1555562471905"></li>
         <li><img id="img_material"></li>
     </ul>
     <li>Draw Options</li>
     <ul>
-        <li><input type="checkbox" id="check_flat" onchange="draw()">Use Flat Shading</li>
+        <li><input type="checkbox" id="check_noshade" onchange="draw()">No Shading</li>
         <li><input type="checkbox" id="check_edges" checked onchange="draw()">Show Edges</li>
         <li><input type="checkbox" id="check_normals" onchange="draw()">Show Normals</li>
         <li>Normal</li>
